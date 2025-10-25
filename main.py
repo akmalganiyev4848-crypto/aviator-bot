@@ -7,7 +7,7 @@ ADMIN_USERNAME = "akibet1"
 ACCESS_KEY = "230220004848"  # Aktivatsiya kodi
 
 bot = telebot.TeleBot(TOKEN)
-verified_users = set()  # Aktiv foydalanuvchilar
+verified_users = set()  # Aktiv foydalanuvchilar ro‘yxati
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -21,11 +21,11 @@ def start(message):
         "👋 Salom!\n\n"
         "Botdan foydalanish uchun quyidagi bosqichlarni bajaring:\n"
         "1️⃣ [Saytga kiring](https://lb-aff.com/L?tag=d_4114394m_22611c_site&site=4114394&ad=22611&r=registration)\n"
-        "2️⃣ Ro‘yxatdan o‘tishda promo kod kiriting: **AKIBET777**\n"
-        "3️⃣ APK versiyasini yuklab oling:\n"
-        "👉 [APK yuklab olish havolasi](https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=66803)\n\n"
-        "✅ To‘liq ro‘yxatdan o‘tgan bo‘lsangiz, ADMIN (@akibet1) ga yozing.\n"
-        "U sizga botni **aktivatsiya kodi**ni beradi."
+        "2️⃣ Promo kod kiriting: *AKIBET777*\n"
+        "3️⃣ APK yuklab oling:\n"
+        "👉 [Yuklab olish](https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=66803)\n\n"
+        "✅ To‘liq ro‘yxatdan o‘tgan bo‘lsangiz, ADMIN: @akibet1 ga yozing.\n"
+        "U sizga botning *aktivatsiya kodini* beradi."
     )
 
     bot.send_message(message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
@@ -48,26 +48,29 @@ def handle_messages(message):
             bot.send_message(user_id, f"✅ Signal {len(verified_users)} foydalanuvchiga yuborildi.")
         return
 
-    # Foydalanuvchi aktivatsiya kodi kiritgan bo‘lsa
-    if message.text == ACCESS_KEY:
-        verified_users.add(user_id)
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        kf_button = types.KeyboardButton("🎯 KF olish")
-        markup.add(kf_button)
-        bot.send_message(user_id, "✅ Aktivatsiya kodi to‘g‘ri!\nEndi sizga signal olish imkoniyati berildi.", reply_markup=markup)
+    # ✅ Foydalanuvchi aktivatsiya kodini kiritgan bo‘lsa
+    if message.text.strip() == ACCESS_KEY:
+        if user_id not in verified_users:
+            verified_users.add(user_id)
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            kf_button = types.KeyboardButton("🎯 KF olish")
+            markup.add(kf_button)
+            bot.send_message(user_id, "✅ Aktivatsiya kodi to‘g‘ri!\nEndi siz signal olish uchun tayyorsiz.", reply_markup=markup)
+        else:
+            bot.send_message(user_id, "✅ Siz allaqachon aktivatsiya qilingan foydalanuvchisiz.")
         return
 
-    # Foydalanuvchi KF so‘rasa
+    # 🎯 KF olish tugmasi
     if message.text == "🎯 KF olish":
         if user_id in verified_users:
             random_kf = round(random.uniform(1.00, 100.00), 2)
             bot.send_message(user_id, f"🎯 KF: *{random_kf}*", parse_mode="Markdown")
         else:
-            bot.send_message(user_id, "❌ Siz hali aktivatsiya qilmagansiz. Avval admin bilan bog‘laning.")
+            bot.send_message(user_id, "❌ Siz hali aktivatsiya qilmagansiz. Admin bilan bog‘laning.")
         return
 
-    # Aks holda
-    bot.send_message(user_id, "❌ Noto‘g‘ri buyruq. Avval /start ni bosing.")
+    # 🔹 Noto‘g‘ri buyruq
+    bot.send_message(user_id, "❌ Noma’lum buyruq. Avval /start ni bosing.")
 
 
 print("✅ Bot ishga tushdi...")
