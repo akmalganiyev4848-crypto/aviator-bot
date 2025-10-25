@@ -1,77 +1,68 @@
 import telebot
-from telebot import types
 import random
+import json
+import os
 
+# 🔐 Tokenni bevosita yozdik (sening tokening)
 TOKEN = "7253804878:AAGPZL3t3ugKYgeWDKB8_vvGG2KJvM_-AaA"
-ADMIN_USERNAME = "akibet1"
-ACCESS_KEY = "230220004848"  # Aktivatsiya kodi
-
 bot = telebot.TeleBot(TOKEN)
-verified_users = set()  # Aktiv foydalanuvchilar ro‘yxati
 
+ACCESS_KEY = "230220004848"
+USERS_FILE = "verified_users.json"
+
+# ✅ Fayl mavjud bo‘lmasa — yaratamiz
+if not os.path.exists(USERS_FILE):
+    with open(USERS_FILE, "w") as f:
+        json.dump([], f)
+
+# ✅ Foydalanuvchilarni yuklash/saqlash
+def load_verified_users():
+    with open(USERS_FILE, "r") as f:
+        return json.load(f)
+
+def save_verified_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f)
+
+# 🎯 /start komandasi
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = types.InlineKeyboardMarkup()
-    link_button = types.InlineKeyboardButton("🔗 Ro‘yxatdan o‘tish", url="https://lb-aff.com/L?tag=d_4114394m_22611c_site&site=4114394&ad=22611&r=registration")
-    apk_button = types.InlineKeyboardButton("📲 APK yuklab olish", url="https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=66803")
-    markup.add(link_button)
-    markup.add(apk_button)
-
     text = (
         "👋 Salom!\n\n"
-        "Botdan foydalanish uchun quyidagi bosqichlarni bajaring:\n"
-        "1️⃣ [Saytga kiring](https://lb-aff.com/L?tag=d_4114394m_22611c_site&site=4114394&ad=22611&r=registration)\n"
-        "2️⃣ Promo kod kiriting: *AKIBET777*\n"
-        "3️⃣ APK yuklab oling:\n"
-        "👉 [Yuklab olish](https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=66803)\n\n"
-        "✅ To‘liq ro‘yxatdan o‘tgan bo‘lsangiz, ADMIN: @akibet1 ga yozing.\n"
-        "U sizga botning *aktivatsiya kodini* beradi."
+        "Botdan foydalanish uchun quyidagi amallarni bajaring:\n"
+        "1️⃣ Ro‘yxatdan o‘ting 👉 https://lb-aff.com/L?tag=d_4114394m_22611c_site&site=4114394&ad=22611&r=registration\n"
+        "2️⃣ Promo kod joyiga <b>AKIBET777</b> yozing.\n"
+        "3️⃣ APK yuklab oling 👉 https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=66803\n"
+        "4️⃣ To‘liq ro‘yxatdan o‘tgandan so‘ng ADMIN: @akibet1 ga yozing.\n"
+        "✅ Admin sizga botning aktivatsiya kodini beradi."
     )
+    bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-    bot.send_message(message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
-
-
+# 🧩 Aktivatsiya kod tekshiruvi va KF funksiyasi
 @bot.message_handler(func=lambda message: True)
-def handle_messages(message):
+def handle_message(message):
     user_id = message.chat.id
-    username = message.from_user.username
+    verified_users = load_verified_users()
 
-    # Admin signal yuborishi uchun
-    if username == ADMIN_USERNAME:
-        if message.text.startswith("signal:"):
-            signal_text = message.text.replace("signal:", "").strip()
-            if not signal_text:
-                bot.send_message(user_id, "⚠️ Signal matni bo‘sh bo‘lmasligi kerak.")
-                return
-            for uid in verified_users:
-                bot.send_message(uid, f"📡 *Signal:* {signal_text}", parse_mode="Markdown")
-            bot.send_message(user_id, f"✅ Signal {len(verified_users)} foydalanuvchiga yuborildi.")
-        return
-
-    # ✅ Foydalanuvchi aktivatsiya kodini kiritgan bo‘lsa
+    # 🔑 Aktivatsiya kodi
     if message.text.strip() == ACCESS_KEY:
         if user_id not in verified_users:
-            verified_users.add(user_id)
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            kf_button = types.KeyboardButton("🎯 KF olish")
-            markup.add(kf_button)
-            bot.send_message(user_id, "✅ Aktivatsiya kodi to‘g‘ri!\nEndi siz signal olish uchun tayyorsiz.", reply_markup=markup)
+            verified_users.append(user_id)
+            save_verified_users(verified_users)
+            bot.send_message(user_id, "✅ Bot aktivatsiya qilindi!\nEndi siz KF olish tugmasidan foydalanishingiz mumkin.")
         else:
-            bot.send_message(user_id, "✅ Siz allaqachon aktivatsiya qilingan foydalanuvchisiz.")
+            bot.send_message(user_id, "⚡ Siz allaqachon aktivatsiya qilingansiz!")
         return
 
-    # 🎯 KF olish tugmasi
-    if message.text == "🎯 KF olish":
-        if user_id in verified_users:
-            random_kf = round(random.uniform(1.00, 100.00), 2)
-            bot.send_message(user_id, f"🎯 KF: *{random_kf}*", parse_mode="Markdown")
+    # 🔓 Aktiv foydalanuvchi uchun KF yuborish
+    if user_id in verified_users:
+        if message.text.lower() in ["kf", "🎯 kf olish"]:
+            kf = round(random.uniform(1.00, 100.00), 2)
+            bot.send_message(user_id, f"🎲 Sizga tavsiya etilgan KF: <b>{kf}</b>", parse_mode="HTML")
         else:
-            bot.send_message(user_id, "❌ Siz hali aktivatsiya qilmagansiz. Admin bilan bog‘laning.")
-        return
-
-    # 🔹 Noto‘g‘ri buyruq
-    bot.send_message(user_id, "❌ Noma’lum buyruq. Avval /start ni bosing.")
-
+            bot.send_message(user_id, "🎯 KF olish uchun 'KF' deb yozing yoki tugmadan foydalaning.")
+    else:
+        bot.send_message(user_id, "🔒 Iltimos, avval botni aktivatsiya qiling. Kodni olish uchun @akibet1 ga murojaat qiling.")
 
 print("✅ Bot ishga tushdi...")
-bot.polling(none_stop=True)
+bot.polling(non_stop=True)
