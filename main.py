@@ -56,18 +56,9 @@ def generate_kf():
     chosen_range = random.choices(ranges, weights=probs, k=1)[0]
     return round(random.uniform(*chosen_range), 2)
 
-# 🔹 KF va mahalliy GIF yuborish
-def send_kf_with_image(user_id, kf):
-    # GIF fayllar images/ papkasida bo‘lishi kerak
-    if kf <= 3.0:
-        file_path = "images/low_kf.gif"
-    elif kf <= 5.0:
-        file_path = "images/mid_kf.gif"
-    else:
-        file_path = "images/high_kf.gif"
-
-    with open(file_path, "rb") as f:
-        bot.send_animation(user_id, f, caption=f"🎲 Sizga tavsiya etilgan KF: <b>{kf}</b>", parse_mode="HTML")
+# 🔹 KF yuborish (rasimsiz)
+def send_kf_text(user_id, kf):
+    bot.send_message(user_id, f"🎲 Sizga tavsiya etilgan KF: <b>{kf}</b>", parse_mode="HTML")
 
 # 🧩 Aktivatsiya kod tekshiruvi
 @bot.message_handler(func=lambda message: True)
@@ -101,7 +92,7 @@ def callback_kf(call):
     verified_users = load_verified_users()
     if user_id in verified_users and call.data == "get_kf":
         kf = generate_kf()
-        send_kf_with_image(user_id, kf)
+        send_kf_text(user_id, kf)
     else:
         bot.answer_callback_query(call.id, "⚠️ Siz hali botni aktiv qilmagansiz!")
 
