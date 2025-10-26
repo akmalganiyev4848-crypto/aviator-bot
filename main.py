@@ -56,15 +56,18 @@ def generate_kf():
     chosen_range = random.choices(ranges, weights=probs, k=1)[0]
     return round(random.uniform(*chosen_range), 2)
 
-# 🔹 KF va mos GIF yuborish
+# 🔹 KF va mahalliy GIF yuborish
 def send_kf_with_image(user_id, kf):
+    # GIF fayllar images/ papkasida bo‘lishi kerak
     if kf <= 3.0:
-        url = "https://i.imgur.com/3V7y1sT.gif"  # past KF
+        file_path = "images/low_kf.gif"
     elif kf <= 5.0:
-        url = "https://i.imgur.com/7YkVQXh.gif"  # o‘rta KF
+        file_path = "images/mid_kf.gif"
     else:
-        url = "https://i.imgur.com/8Q2RzZL.gif"  # yuqori KF
-    bot.send_animation(user_id, url, caption=f"🎲 Sizga tavsiya etilgan KF: <b>{kf}</b>", parse_mode="HTML")
+        file_path = "images/high_kf.gif"
+
+    with open(file_path, "rb") as f:
+        bot.send_animation(user_id, f, caption=f"🎲 Sizga tavsiya etilgan KF: <b>{kf}</b>", parse_mode="HTML")
 
 # 🧩 Aktivatsiya kod tekshiruvi
 @bot.message_handler(func=lambda message: True)
