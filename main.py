@@ -45,9 +45,7 @@ def start(message):
         "2️⃣ Promo kod joyiga <b>AKIBET777</b> yozing.\n"
         "3️⃣ APK yuklab oling 👉 https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=66803\n"
         "4️⃣ To‘liq ro‘yxatdan o‘tgandan so‘ng ADMIN: @akibet1 ga yozing.\n"
-        "✅ Admin sizga botning aktivatsiya kodini beradi.\n\n"
-        "💡 Qo‘shimcha komandalar:\n"
-        "/tip - tasodifiy maslahat olish"
+        "✅ Admin sizga botning aktivatsiya kodini beradi."
     )
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
@@ -126,18 +124,6 @@ def send_kf(call):
         # Xabar yuborish
         last_kfs = ", ".join(str(x) for x in history[user_id])
         bot.send_message(user_id, f"🎲 Sizga tavsiya etilgan KF: <b>{kf}</b>\n📊 So‘nggi KFlar: {last_kfs}\n💡 Maslahat: {tip}", parse_mode="HTML")
-    else:
-        bot.send_message(user_id, "⚠️ Siz hali botni aktiv qilmagansiz!")
-
-# 🔹 /tip komandasi – foydalanuvchiga tasodifiy maslahat berish
-@bot.message_handler(commands=['tip'])
-def tip_command(message):
-    user_id = str(message.chat.id)
-    verified_users = load_verified_users()
-
-    if user_id in verified_users:
-        tip = get_random_tip()
-        bot.send_message(user_id, f"💡 Tasodifiy maslahat: {tip}")
     else:
         bot.send_message(user_id, "⚠️ Siz hali botni aktiv qilmagansiz!")
 
