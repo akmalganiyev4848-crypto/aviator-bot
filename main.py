@@ -3,7 +3,7 @@ import random
 import json
 import os
 
-# 🔐 Tokenni bevosita yozdik (sening tokening)
+# 🔐 Token
 TOKEN = "7253804878:AAGPZL3t3ugKYgeWDKB8_vvGG2KJvM_-AaA"
 bot = telebot.TeleBot(TOKEN)
 
@@ -38,14 +38,26 @@ def start(message):
     )
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
+# 🔹 Aviator statistikaga mos KF yaratish
+def generate_kf():
+    rand = random.random()  # 0.0–1.0
+    if rand < 0.7:  # 70% ehtimol bilan 1.0–3.0
+        kf = round(random.uniform(1.00, 3.00), 2)
+    elif rand < 0.9:  # 20% ehtimol bilan 3.0–5.0
+        kf = round(random.uniform(3.01, 5.00), 2)
+    else:  # 10% ehtimol bilan 5.01–10.0
+        kf = round(random.uniform(5.01, 10.00), 2)
+    return kf
+
 # 🧩 Aktivatsiya kod tekshiruvi va KF funksiyasi
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     user_id = message.chat.id
     verified_users = load_verified_users()
+    text = message.text.strip()
 
     # 🔑 Aktivatsiya kodi
-    if message.text.strip() == ACCESS_KEY:
+    if text == ACCESS_KEY:
         if user_id not in verified_users:
             verified_users.append(user_id)
             save_verified_users(verified_users)
@@ -56,13 +68,14 @@ def handle_message(message):
 
     # 🔓 Aktiv foydalanuvchi uchun KF yuborish
     if user_id in verified_users:
-        if message.text.lower() in ["kf", "🎯 kf olish"]:
-            kf = round(random.uniform(1.00, 100.00), 2)
+        if text.lower() in ["kf", "🎯 kf olish"]:
+            kf = generate_kf()
             bot.send_message(user_id, f"🎲 Sizga tavsiya etilgan KF: <b>{kf}</b>", parse_mode="HTML")
         else:
             bot.send_message(user_id, "🎯 KF olish uchun 'KF' deb yozing yoki tugmadan foydalaning.")
     else:
-        bot.send_message(user_id, "🔒 Iltimos, avval botni aktivatsiya qiling. Kodni olish uchun @akibet1 ga murojaat qiling.")
+        # ❌ Aktiv bo‘lmagan foydalanuvchi
+        bot.send_message(user_id, "⚠️ Siz hali botni aktiv qilmagansiz!\nIltimos, admin orqali aktivatsiya kodini oling.")
 
-print("✅ Bot ishga tushdi...")
-bot.polling(non_stop=True)
+# 🔄 Botni ishga tushiramiz
+bot.polling(none_stop=True)
