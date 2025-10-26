@@ -1,4 +1,5 @@
 import telebot
+from telebot import types
 import random
 import json
 import os
@@ -17,12 +18,15 @@ if not os.path.exists(USERS_FILE):
 
 # ✅ Foydalanuvchilarni yuklash/saqlash
 def load_verified_users():
-    with open(USERS_FILE, "r") as f:
-        return json.load(f)
+    try:
+        with open(USERS_FILE, "r") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
 
 def save_verified_users(users):
     with open(USERS_FILE, "w") as f:
-        json.dump(users, f)
+        json.dump(users, f, indent=4)
 
 # 🎯 /start komandasi
 @bot.message_handler(commands=['start'])
@@ -38,18 +42,31 @@ def start(message):
     )
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-# 🔹 Aviator statistikaga mos KF yaratish
-def generate_kf():
-    rand = random.random()  # 0.0–1.0
-    if rand < 0.7:  # 70% ehtimol bilan 1.0–3.0
-        kf = round(random.uniform(1.00, 3.00), 2)
-    elif rand < 0.9:  # 20% ehtimol bilan 3.0–5.0
-        kf = round(random.uniform(3.01, 5.00), 2)
-    else:  # 10% ehtimol bilan 5.01–10.0
-        kf = round(random.uniform(5.01, 10.00), 2)
-    return kf
+# 🔹 KF tugmasini inline tarzda yuborish
+def send_inline_kf(user_id):
+    markup = types.InlineKeyboardMarkup()
+    btn = types.InlineKeyboardButton("🎯 KF olish", callback_data="get_kf")
+    markup.add(btn)
+    bot.send_message(user_id, "KF olish uchun tugmani bosing:", reply_markup=markup)
 
-# 🧩 Aktivatsiya kod tekshiruvi va KF funksiyasi
+# 🔹 Aviatorga mos KF yaratish
+def generate_kf():
+    ranges = [(1.00, 3.00), (3.01, 5.00), (5.01, 10.00)]
+    probs = [0.7, 0.2, 0.1]
+    chosen_range = random.choices(ranges, weights=probs, k=1)[0]
+    return round(random.uniform(*chosen_range), 2)
+
+# 🔹 KF va mos GIF yuborish
+def send_kf_with_image(user_id, kf):
+    if kf <= 3.0:
+        url = "https://i.imgur.com/3V7y1sT.gif"  # past KF
+    elif kf <= 5.0:
+        url = "https://i.imgur.com/7YkVQXh.gif"  # o‘rta KF
+    else:
+        url = "https://i.imgur.com/8Q2RzZL.gif"  # yuqori KF
+    bot.send_animation(user_id, url, caption=f"🎲 Sizga tavsiya etilgan KF: <b>{kf}</b>", parse_mode="HTML")
+
+# 🧩 Aktivatsiya kod tekshiruvi
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     user_id = message.chat.id
@@ -61,21 +78,29 @@ def handle_message(message):
         if user_id not in verified_users:
             verified_users.append(user_id)
             save_verified_users(verified_users)
-            bot.send_message(user_id, "✅ Bot aktivatsiya qilindi!\nEndi siz KF olish tugmasidan foydalanishingiz mumkin.")
+            bot.send_message(user_id, "✅ Bot aktivatsiya qilindi!")
+            send_inline_kf(user_id)
         else:
             bot.send_message(user_id, "⚡ Siz allaqachon aktivatsiya qilingansiz!")
         return
 
-    # 🔓 Aktiv foydalanuvchi uchun KF yuborish
+    # 🔓 Aktiv foydalanuvchi uchun KF tugmasini yuborish
     if user_id in verified_users:
-        if text.lower() in ["kf", "🎯 kf olish"]:
-            kf = generate_kf()
-            bot.send_message(user_id, f"🎲 Sizga tavsiya etilgan KF: <b>{kf}</b>", parse_mode="HTML")
-        else:
-            bot.send_message(user_id, "🎯 KF olish uchun 'KF' deb yozing yoki tugmadan foydalaning.")
+        send_inline_kf(user_id)
     else:
-        # ❌ Aktiv bo‘lmagan foydalanuvchi
         bot.send_message(user_id, "⚠️ Siz hali botni aktiv qilmagansiz!\nIltimos, admin orqali aktivatsiya kodini oling.")
+        start(message)
+
+# 🔹 Callback: Inline tugmani bosganda KF yuborish
+@bot.callback_query_handler(func=lambda call: True)
+def callback_kf(call):
+    user_id = call.message.chat.id
+    verified_users = load_verified_users()
+    if user_id in verified_users and call.data == "get_kf":
+        kf = generate_kf()
+        send_kf_with_image(user_id, kf)
+    else:
+        bot.answer_callback_query(call.id, "⚠️ Siz hali botni aktiv qilmagansiz!")
 
 # 🔄 Botni ishga tushiramiz
 bot.polling(none_stop=True)
