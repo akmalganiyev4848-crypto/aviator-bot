@@ -1,1 +1,3 @@
-pyTelegramBotAPI
+pytelegrambotapi
+pillow
+pytesseract
