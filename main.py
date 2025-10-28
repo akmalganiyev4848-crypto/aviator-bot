@@ -30,7 +30,7 @@ PROMO_CODE = "AKIBET777"
 REG_LINK = "https://lb-aff.com/L?tag=d_4114394m_22611c_site&site=4114394&ad=22611&r=registration"
 APK_LINK = "https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=66803"
 CHANNEL_LINK = "https://t.me/aviatorwinuzbot"
-ADMIN_USERNAME_DISPLAY = "@akibet"
+ADMIN_USERNAME_DISPLAY = "@akibet1"
 ADMIN_ID = 534829573
 
 # Files
