@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # main.py - Aviator bot (merged, improved)
 # Features:
-# - Admin (@akibet) can generate one-time activation codes (/genkey)
+# - Admin (@akibet1) can generate one-time activation codes (/genkey)
 # - Per-user KF storage (user_kf.json)
 # - Smart append/replace behavior for added KF lists
 # - OCR from screenshot images to extract KF values
@@ -25,13 +25,13 @@ from telebot import types
 
 # ---------------- Config ----------------
 TOKEN = os.getenv("TOKEN", "7253804878:AAGPZL3t3ugKYgeWDKB8_vvGG2KJvM_-AaA")
-ADMIN_USERNAME = "akibet"    # admin username WITHOUT '@' (as requested)
+ADMIN_USERNAME = "akibet1"    # admin username WITHOUT '@'
 PROMO_CODE = "AKIBET777"
 REG_LINK = "https://lb-aff.com/L?tag=d_4114394m_22611c_site&site=4114394&ad=22611&r=registration"
 APK_LINK = "https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=66803"
 CHANNEL_LINK = "https://t.me/aviatorwinuzbot"
 ADMIN_USERNAME_DISPLAY = "@akibet1"
-ADMIN_ID = 534829573
+ADMIN_ID = 7960951525  # admin Telegram numeric ID
 
 # Files
 DATA_DIR = "data"
@@ -78,6 +78,13 @@ for p, d in [(USERS_FILE, []), (ACT_KEYS_FILE, {}), (USER_KF_FILE, {}), (USER_SI
 
 # ---------------- Bot init ----------------
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
+
+# ---------------- Helpers: admin check ----------------
+def is_admin(user_id):
+    try:
+        return int(user_id) == int(ADMIN_ID)
+    except:
+        return False
 
 # ---------------- Helpers: activation keys ----------------
 def gen_key(length=8):
@@ -156,6 +163,9 @@ def set_promo_confirmed(user_id):
     return changed
 
 def is_user_activated(user_id):
+    # Admin is always activated
+    if is_admin(user_id):
+        return True
     users = get_all_users()
     return any(int(u.get("id")) == int(user_id) for u in users)
 
@@ -284,7 +294,7 @@ def build_signal_menu():
 def cmd_start(m):
     txt = (
         "👋 <b>Salom!</b> Aviator tahlilchi botga xush kelibsiz.\n\n"
-        "🔐 Aktivatsiya uchun admin (@akibet) dan bir martalik kod oling.\n"
+        f"🔐 Aktivatsiya uchun admin ({ADMIN_USERNAME_DISPLAY}) dan bir martalik kod oling.\n"
         "📊 Signal menyusi uchun /signalmenu bosing.\n"
         "📸 Skrinshot yuborish orqali ham KFlarni avtomatik qabul qilamiz.\n\n"
         f"🎁 Promo: <code>{PROMO_CODE}</code>\n"
@@ -299,8 +309,7 @@ def cmd_signalmenu(m):
 # Admin: generate keys
 @bot.message_handler(commands=['genkey', 'createkey'])
 def cmd_genkey(m):
-    username = m.from_user.username or ""
-    if username.lower() != ADMIN_USERNAME.lower():
+    if not is_admin(m.from_user.id):
         bot.send_message(m.chat.id, "⛔ Bu buyruq faqat admin uchun.")
         return
     parts = m.text.strip().split()
@@ -317,8 +326,7 @@ def cmd_genkey(m):
 
 @bot.message_handler(commands=['users'])
 def cmd_users(m):
-    username = m.from_user.username or ""
-    if username.lower() != ADMIN_USERNAME.lower():
+    if not is_admin(m.from_user.id):
         bot.send_message(m.chat.id, "⛔ Bu buyruq faqat admin uchun.")
         return
     users = get_all_users()
@@ -646,3 +654,4 @@ def run():
     bot.infinity_polling(timeout=60, long_polling_timeout=60)
 
 if __name__ == "__main__":
+    run()
