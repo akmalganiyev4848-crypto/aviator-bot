@@ -31,6 +31,7 @@ REG_LINK = "https://lb-aff.com/L?tag=d_4114394m_22611c_site&site=4114394&ad=2261
 APK_LINK = "https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=66803"
 CHANNEL_LINK = "https://t.me/aviatorwinuzbot"
 ADMIN_USERNAME_DISPLAY = "@akibet"
+ADMIN_ID = 534829573
 
 # Files
 DATA_DIR = "data"
@@ -645,4 +646,3 @@ def run():
     bot.infinity_polling(timeout=60, long_polling_timeout=60)
 
 if __name__ == "__main__":
-    run()
