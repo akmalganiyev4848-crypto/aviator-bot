@@ -1,75 +1,48 @@
-import asyncio
-import random
+import logging
 from aiogram import Bot, Dispatcher, html
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import CommandStart
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+import asyncio
 
-# Tokeningiz shu yerga xavfsiz joylashtirildi
-BOT_TOKEN = "7253804878:AAGPZL3t3ugKYgeWDKB8_vvGG2KJvM_-AaA"
+# Bot tokeningizni shu yerga yozing
+TOKEN = "BOT_TOKENINGIZNI_SHU_YERGA_YOZING"
 
-bot = Bot(token=BOT_TOKEN)
+# SIZNING MA'LUMOTLARINGIZ
+PROMO_KOD = "AKIBET777"
+SAYT_LINK = "https://lb-aff.com/L?tag=d_4114394m_22611c_site&site=4114394&ad=22611&r=registration"
+APK_LINK = "https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=66803"
+REF_START_PARAM = "myref"  # t.me/bot_nomi?start=myref (avtomatik ochish uchun link)
+
+# Botni sozlash
+logging.basicConfig(level=logging.INFO)
+bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Bot tugmalari
-menu_keyboard = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="🚀 Signal olish"), KeyboardButton(text="📊 Statistika")]
-    ],
-    resize_keyboard=True
-)
+# Tasdiqlangan foydalanuvchilar bazasi (fonda saqlanadi)
+tasdiqlangan_foydalanuvchilar = set()
+
+class BotHolatlari(StatesGroup):
+    promokod_kutish = State()
+
+# Ro'yxatdan o'tish uchun tugmalarni yaratish
+def royxatdan_otish_tugmalari():
+    markup = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🌐 Sayt orqali ro'yxatdan o'tish", url=SAYT_LINK)],
+        [InlineKeyboardButton(text="📱 APK yuklab olish (Android)", url=APK_LINK)]
+    ])
+    return markup
 
 @dp.message(CommandStart())
-async def start_command(message: Message):
-    await message.answer(
-        f"Salom, {html.bold(message.from_user.full_name)}!\n\n"
-        f"Aviator o'yini uchun simulyatsiya botiga xush kelibsiz.\n"
-        f"Signal olish uchun pastdagi tugmani bosing.",
-        reply_markup=menu_keyboard
-    )
+async def start_komandasi(message: Message, state: FSMContext):
+    user_id = message.from_user.id
+    argument = message.text.split()[1] if len(message.text.split()) > 1 else None
 
-@dp.message(lambda message: message.text == "🚀 Signal olish")
-async def get_signal(message: Message):
-    # Analiz jarayonini taqlid qilish
-    waiting_msg = await message.answer("🔄 Algoritm tahlil qilinmoqda, kuting...")
-    await asyncio.sleep(1.5) # 1.5 soniya kutish
-    
-    # Tasodifiy koeffitsiyent yaratish
-    chance = random.random()
-    if chance < 0.6: # 60% ehtimollik bilan 1.0 dan 2.0 gacha
-        coefficient = round(random.uniform(1.0, 2.0), 2)
-    elif chance < 0.9: # 30% ehtimollik bilan 2.0 dan 5.0 gacha
-        coefficient = round(random.uniform(2.0, 5.0), 2)
-    else: # 10% ehtimollik bilan 5.0 dan 20.0 gacha
-        coefficient = round(random.uniform(5.0, 20.0), 2)
-        
-    # Tasodifiy aniqlik foizi
-    accuracy = random.randint(75, 95)
-    
-    # Signal matni
-    signal_text = (
-        f"🚀 {html.bold('AVIATOR SIGNAL')} 🚀\n\n"
-        f"📈 Kutilayotgan koeffitsiyent: {html.code(f'{coefficient}x')}\n"
-        f"🎯 Aniqlik ehtimoli: {accuracy}%\n\n"
-        f"⚠️ Ogohlantirish: Bu shunchaki matematik ehtimollik hisobi!"
-    )
-    
-    # Kutish xabarini o'chirib, signalni yuborish
-    await waiting_msg.delete()
-    await message.answer(signal_text, parse_mode="HTML")
+    # 1. Agar foydalanuvchi allaqachon tasdiqlangan bo'lsa
+    if user_id in tasdiqlangan_foydalanuvchilar:
+        await message.answer(f"🚀 Xush kelibsiz, {html.bold(message.from_user.full_name)}! Bot siz uchun faol. Foydalanishishingiz mumkin.")
+        return
 
-@dp.message(lambda message: message.text == "📊 Statistika")
-async def show_stats(message: Message):
-    await message.answer(
-        f"📊 Bot statistikasi:\n"
-        f"🟢 Bot holati: Onlayn\n"
-        f"⚡ Server tezligi: 0.04s\n"
-        f"🤖 Algoritm versiyasi: v2.1"
-    )
+    # 2. Agar maxsus ref-link orqali kir
 
-async def main():
-    print("Bot ishga tushdi...")
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
-  
