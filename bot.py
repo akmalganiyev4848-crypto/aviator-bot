@@ -4,10 +4,15 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from aiogram.client.session.aiohttp import AiohttpSession
 import asyncio
 
 # ⚠️ MANA SHU YERDAGI QO'SHTIRNOQ ICHIGA O'ZINGNING TOKENINGNI TASHLA:
 TOKEN = "7123456789:ABCdefGhIJKlmNoPQRstUVwXyZ"
+
+# PythonAnywhere tekin akkauntidagi blokni aylanib o'tish uchun bepul Proxy:
+PROXY_URL = "http://proxy.server:3128"
+session = AiohttpSession(proxy=PROXY_URL)
 
 # SIZNING MA'LUMOTLARINGIZ
 PROMO_KOD = "AKIBET777"
@@ -16,7 +21,8 @@ APK_LINK = "https://lb-aff.com/L?tag=d_4114394m_66803c_apk1&site=4114394&ad=6680
 REF_START_PARAM = "myref"
 
 logging.basicConfig(level=logging.INFO)
-bot = Bot(token=TOKEN)
+# Botni maxsus proxy sessiyasi bilan ishga tushiramiz:
+bot = Bot(token=TOKEN, session=session)
 dp = Dispatcher()
 
 tasdiqlangan_foydalanuvchilar = set()
@@ -49,7 +55,7 @@ async def start_komandasi(message: Message, state: FSMContext):
     matn = (
         f"Salom, {html.bold(message.from_user.full_name)}! 👋\n\n"
         f"⚠️ Botdan to'liq foydalanish va signallarni ko'rish uchun quyidagi shartlarni bajaring:\n\n"
-        f"1️⃣ Pastdagi tugmalar orqali sayt yoki APK ilovadan ro'yxatdan o'ting.\n"
+        f"1️⃣ Pastdagi tugmalar orqali sayt yoki APK ilovadan ro'yxatdan o'tishingiz shart.\n"
         f"2️⃣ Ro'yxatdan o'tishda {html.bold(PROMO_KOD)} promokodini kiriting.\n\n"
         f"Ro'yxatdan o'tib bo'lgach, faollashtirish uchun botga {html.underline('promokodingizni')} yozib yuboring 👇:"
     )
