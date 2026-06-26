@@ -3,7 +3,6 @@ from telebot import types
 
 # ⚠️ MANA SHU YERDAGI QO'SHTIRNOQ ICHIGA O'ZINGNING TOKENINGNI YOZ:
 TOKEN = "7253804878:AAGPZL3t3ugKYgeWDKB8_vvGG2KJvM_-AaA"
-
 # PythonAnywhere tekin akkaunti uchun Proxy sozlamasi:
 from telebot import apihelper
 apihelper.proxy = {'http': 'http://proxy.server:3128'}
