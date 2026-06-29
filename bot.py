@@ -3,7 +3,8 @@ import random
 from telebot import types
 
 TOKEN = "7253804878:AAGPNjcSRJhtz5yE9Nosvr79bq1F9MgkqcU"
-ADMIN_ID = 7960951525  # Sizning to'g'ri Telegram ID raqamingiz shu yerga qo'yildi!
+SECRET_CODE = "23022000"  # Siz aytgan maxfiy kod
+ADMIN_USERNAME = "@gv_aki"  # Sizning username'ingiz
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -43,27 +44,30 @@ def start(message):
 @bot.message_handler(content_types=['text'])
 def handle_text(message):
     user_id = message.chat.id
-    username = f"@{message.from_user.username}" if message.from_user.username else "Yashirin profil"
+    text = message.text.strip()
 
-    if message.text == "🎁 Promo-kod bilan Bonus":
+    if text == "🎁 Promo-kod bilan Bonus":
         bonus_text = (
             "🎁 **BOTNI FAOLLASHTIRISH VA BONUS OLISH QO'LLANMASI**\n\n"
-            "1️⃣ Linebet rasmiy saytida yangi akkaunt oching.\n"
+            "1️⃣ Pastdagi tugma orqali Linebet saytida yangi akkaunt oching.\n"
             "2️⃣ Ro'yxatdan o'tishda **AKIBET777** promo-kodini kiriting.\n"
-            "3️⃣ Akkauntingiz ID raqamini yoki ro'yxatdan o'tganingiz haqidagi skrinshotni shu yerga xabar qilib yuboring.\n\n"
-            "⏳ Siz yuborgan ma'lumotni admin tekshirib, 5-10 daqiqa ichida botingizni faollashtirib beradi!"
+            f"3️⃣ Ro'yxatdan o'tganingizdan so'ng, akkaunt ID raqamingiz yoki skrinshotini adminga ({ADMIN_USERNAME}) yuboring.\n\n"
+            "🔑 Admin tekshirib, sizga botni faollashtiruvchi **maxfiy kodni** beradi. O'sha kodni ushbu botga yozsangiz, signallar ochiladi!"
         )
         inline_markup = types.InlineKeyboardMarkup()
-        link_btn = types.InlineKeyboardButton("🌐 Linebet rasmiy sayti", url="https://linebet.com")
+        # Sizning yangi referal havolangiz shu yerga qo'yildi
+        link_btn = types.InlineKeyboardButton("🌐 Linebet saytiga o'tish", url="https://lb-aff.com/L?tag=d_4114394m_22611c_&site=4114394&ad=22611")
+        admin_btn = types.InlineKeyboardButton("👤 Adminga yozish", url=f"https://t.me/{ADMIN_USERNAME.replace('@', '')}")
         inline_markup.add(link_btn)
+        inline_markup.add(admin_btn)
         bot.send_message(user_id, bonus_text, reply_markup=inline_markup, parse_mode="Markdown")
 
-    elif message.text == "🚀 Signal olish":
+    elif text == "🚀 Signal olish":
         # Ruxsat tekshirish
         if user_id not in allowed_users:
             alert_text = (
                 "🛑 **Kirish taqiqlangan!**\n\n"
-                "Siz hali admin tomonidan tasdiqlanmadingiz. Iltimos, **🎁 Promo-kod bilan Bonus** tugmasini bosib, ko'rsatmalarni bajaring va ID raqamingizni yuborib kuting."
+                f"Siz hali botni faollashtirmadingiz. Iltimos, **🎁 Promo-kod bilan Bonus** tugmasini bosing, shartlarni bajarib adminga ({ADMIN_USERNAME}) yozing va faollashtirish kodini oling."
             )
             bot.send_message(user_id, alert_text, parse_mode="Markdown")
         else:
@@ -84,7 +88,7 @@ def handle_text(message):
             )
             bot.send_message(user_id, signal_text, parse_mode="Markdown")
 
-    elif message.text == "📊 Aviator Statistika":
+    elif text == "📊 Aviator Statistika":
         stat_text = (
             "📊 **Aviator Global O'yinlar Statistikasi (Oxirgi 10,000 raund):**\n\n"
             "🔹 **1.00x - 1.60x (Eng ko'p chiqadigan):** 62.4% holatda\n"
@@ -95,26 +99,19 @@ def handle_text(message):
         )
         bot.send_message(user_id, stat_text, parse_mode="Markdown")
 
+    elif text == SECRET_CODE:
+        # Foydalanuvchi to'g'ri kodni kiritganda
+        if user_id in allowed_users:
+            bot.send_message(user_id, "ℹ️ Botingiz allaqachon faollashtirilgan!", reply_markup=main_menu())
+        else:
+            save_user(user_id)
+            bot.send_message(
+                user_id, 
+                "🎉 **Tabriklaymiz! Maxfiy kod qabul qilindi va botingiz muvaffaqiyatli faollashtirildi!**\n\nEndi **🚀 Signal olish** tugmasini bosib cheksiz signallardan foydalanishingiz mumkin!", 
+                reply_markup=main_menu()
+            )
     else:
-        # Foydalanuvchi ID yoki skrinshot yuborganida adminga xabar ketadi
-        if user_id != ADMIN_ID:
-            bot.send_message(ADMIN_ID, f"🔔 **Yangi ariza!**\n\nFoydalanuvchi: {username}\nID: `{user_id}`\nXabari: {message.text}\n\nUshbu foydalanuvchiga ruxsat berish uchun pastdagi buyruqni bosing:\n/allow_{user_id}", parse_mode="Markdown")
-            bot.send_message(user_id, "✅ Ma'lumotlaringiz adminga yuborildi. Tasdiqlanishini kuting...")
-
-# Admin foydalanuvchiga ruxsat berganida (/allow_ID buyrug'i)
-@bot.message_handler(commands=['allow'])
-@bot.message_handler(func=lambda message: message.text.startswith('/allow_'))
-def admin_allow_user(message):
-    if message.chat.id == ADMIN_ID:
-        try:
-            target_user_id = int(message.text.split('_')[1])
-            save_user(target_user_id)
-            
-            bot.send_message(ADMIN_ID, f"✅ Foydalanuvchi (ID: {target_user_id}) muvaffaqiyatli tasdiqlandi!")
-            bot.send_message(target_user_id, "🎉 **Tabriklaymiz! Admin sizning so'rovingizni tasdiqladi.**\n\nEndi bot to'liq faollashdi. **🚀 Signal olish** tugmasini bosib signallardan cheksiz foydalanishingiz mumkin!", reply_markup=main_menu())
-        except Exception as e:
-            bot.send_message(ADMIN_ID, "❌ Buyruq xato bajarildi yoki ID topilmadi.")
-
-if __name__ == '__main__':
-    bot.polling(none_stop=True)
-            
+        # Kod noto'g'ri bo'lsa yoki boshqa matn yozilsa
+        if user_id not in allowed_users:
+            bot.send_message(user_id, f"❌ **Noto'g'ri kod yoki tushunarsiz buyruq!**\n\nBotni faollashtirish kodini olish uchun adminga murojaat qiling: {ADMIN_USERNAME}")
+        
