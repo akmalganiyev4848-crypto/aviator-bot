@@ -3,7 +3,7 @@ import random
 from telebot import types
 
 # Tokeningizni kiriting
-TOKEN = "7253804878:AAGPZL3t3ugKYgeWDKB8_vvGG2KJvM_-AaA" 
+TOKEN = "7253804878:AAGPNjcSRJhtz5yE9Nosvr79bq1F9MgkqcU" 
 ADMIN_ID = 7960951525 
 bot = telebot.TeleBot(TOKEN)
 
